@@ -27,12 +27,15 @@ body {
 }
 
 .app__logo {
-  width: .8rem;
+  width: 0.8rem;
   margin-right: var(--base);
 }
 
 .app__body {
   padding: calc(var(--base) * 1);
+  gap: calc(var(--base) * 1);
+  display: grid;
+  grid-template-columns: 20rem 1fr;
 }
 
 .scale {
@@ -41,18 +44,14 @@ body {
 
 .scale ul {
   display: flex;
+  flex-flow: column;
+  gap: calc(var(--base) * 1);
 }
 
 .scale li {
   list-style: none;
-  margin-right: var(--base);
-  flex-basis: 100px;
   flex-grow: 1;
   height: 100px;
-}
-
-.scale li:last-of-type {
-  margin-right: 0;
 }
 
 .swatch {
@@ -73,6 +72,8 @@ body {
   border-radius: var(--br);
   cursor: crosshair;
   width: 100%;
+  border: 1px solid black;
+  grid-column: 2/ 3;
 }
 
 .graph__point {

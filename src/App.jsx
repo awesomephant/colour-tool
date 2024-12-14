@@ -2,7 +2,6 @@ import { useState } from "react"
 import "./App.css"
 import Graph from "./Graph"
 import Scale from "./Scale"
-import favicon from "./favicon.svg"
 
 function App() {
   const [scales, setScales] = useState([{ id: "scale1", colours: [] }])
@@ -29,7 +28,7 @@ function App() {
       </header>
       <main className="app__body">
         <section className="scales">{scaleElements}</section>
-        <Graph addSwatch={addSwatch} scales={scales}></Graph>
+        <Graph addSwatch={addSwatch} scales={scales} hue={160}></Graph>
       </main>
     </div>
   )

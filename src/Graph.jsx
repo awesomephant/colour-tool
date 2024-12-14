@@ -1,55 +1,34 @@
 import { useEffect, useRef, useState } from "react"
 import utils from "./utils"
+import { Hsluv } from "hsluv"
 
-function renderGraph(el) {
+function renderGraph(el, hue) {
   const c = el.getContext("2d")
-  const cw = c.canvas.width
-  const ch = c.canvas.height
-  const h = 20
+  const w = c.canvas.width
+  const h = c.canvas.height
 
+  const rw = w
+  const rh = h
+
+  const conv = new Hsluv()
   let data = []
 
-  let sn = 0
-  let ln = 0
-  for (let i = 0; i < ch; i++) {
-    for (let j = 0; j < cw; j++) {
-      sn = 1 - (1 / ch) * i
-      ln = (1 / cw) * j
-      let rgba = utils.HSLToRGBA([h, sn, ln])
-      data.push(...rgba)
-    }
+  for (let i = 0; i < rw * rh; i++) {
+    const lightness = 100 * ((i % rw) / rw)
+    const saturation = 100 - 100 * (Math.floor(i / rw) / rh) // [0,100]
+    conv.hsluv_h = hue
+    conv.hsluv_s = saturation
+    conv.hsluv_l = lightness
+    conv.hsluvToRgb()
+    data.push(Math.round(conv.rgb_r * 255), Math.round(conv.rgb_g * 255), Math.round(conv.rgb_b * 255), 255)
   }
 
   const clampedData = Uint8ClampedArray.from(data)
-  const id = new ImageData(clampedData, cw)
-
+  const id = new ImageData(clampedData, Math.floor(rw))
   c.putImageData(id, 0, 0)
-
-  const spacing = 48
-  const rowCount = Math.ceil(ch / spacing)
-  const columnCount = Math.ceil(cw / spacing)
-  const r = 0
-  const w = 0.5
-
-  for (let i = 0; i < columnCount; i++) {
-    for (let j = 0; j < rowCount; j++) {
-      let x = (cw / columnCount) * i + spacing / 2
-      let y = (ch / rowCount) * j + spacing / 2
-      c.fillStyle = "black"
-      // horizontal
-      // c.fillRect(x - r / 2, y - w / 2, r, w);
-      // vertical
-      // c.fillRect(x - w / 2, y - r / 2, w, r);
-      let v = 255 - (cw / 255) * i
-      c.fillStyle = `rgb(${v},${v},${v})`
-      if (i < columnCount / 2) {
-      }
-      c.fillRect(x - r / 2, y - r / 2, r, r)
-    }
-  }
 }
 
-function Graph(props) {
+function Graph({ hue, ...props }) {
   const canvasRef = useRef()
   const [mouse, setMouse] = useState({ x: 0, y: 0 })
   const [canvas, setCanvas] = useState({ width: 0, height: 0 })
@@ -67,7 +46,7 @@ function Graph(props) {
     const target = e.target.getBoundingClientRect()
     const x = e.clientX - target.x
     const y = e.clientY - target.y
-    const h = 20
+    const h = hue
     const s = 1 - y / target.height
     const l = x / target.width
 
@@ -87,9 +66,9 @@ function Graph(props) {
     const cr = canvasRef.current.getBoundingClientRect()
     canvasRef.current.width = cr.width
     canvasRef.current.height = cr.height
-    renderGraph(canvasRef.current, scale)
+    renderGraph(canvasRef.current, hue)
     setCanvas({ width: cr.width, height: cr.height })
-  }, [])
+  }, [hue])
 
   const points = scale.colours.map((p, i) => {
     const [h, s, l] = p
@@ -101,7 +80,6 @@ function Graph(props) {
     let bc = "black"
     if (p.colour[2] < 0.5) {
       bc = "white"
-    } else {
     }
     const css = {
       width: `${r}px`,
